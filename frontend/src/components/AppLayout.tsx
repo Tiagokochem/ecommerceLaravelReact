@@ -34,6 +34,15 @@ export function AppLayout({ children }: { children: ReactNode }): ReactElement {
       </Button>
       {user ? (
         <>
+          <Button
+            color="inherit"
+            variant="outlined"
+            component={RouterLink}
+            to="/categories"
+            sx={{ borderColor: 'rgba(255,255,255,0.4)' }}
+          >
+            Categorias
+          </Button>
           <Chip label={user.name} size="small" sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white' }} />
           <Button color="inherit" variant="contained" onClick={handleLogout} disabled={loading}>
             Sair
@@ -77,6 +86,9 @@ export function AppLayout({ children }: { children: ReactNode }): ReactElement {
           </ListItemButton>
           {user ? (
             <>
+              <ListItemButton component={RouterLink} to="/categories">
+                <ListItemText primary="Categorias" />
+              </ListItemButton>
               <ListItemButton onClick={handleLogout}>
                 <ListItemText primary="Sair" />
               </ListItemButton>

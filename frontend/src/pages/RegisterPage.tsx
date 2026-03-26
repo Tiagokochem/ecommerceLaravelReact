@@ -1,4 +1,16 @@
-import { Alert, Box, Button, Paper, Stack, TextField, Typography } from '@mui/material';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import {
+  Alert,
+  Box,
+  Button,
+  IconButton,
+  InputAdornment,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material';
 import { useState, type ReactElement } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -14,6 +26,8 @@ export function RegisterPage(): ReactElement {
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false);
 
   async function handleSubmit(e: React.FormEvent): Promise<void> {
     e.preventDefault();
@@ -59,7 +73,15 @@ export function RegisterPage(): ReactElement {
 
   return (
     <Box maxWidth={420} mx="auto">
-      <Paper sx={{ p: 4 }}>
+      <Paper
+        sx={{
+          p: 4,
+          borderRadius: 4,
+          background: 'rgba(255,255,255,0.92)',
+          backdropFilter: 'blur(8px)',
+          boxShadow: '0 10px 30px rgba(21, 101, 192, 0.18)',
+        }}
+      >
         <Typography variant="h5" gutterBottom>
           Criar conta
         </Typography>
@@ -94,7 +116,7 @@ export function RegisterPage(): ReactElement {
             />
             <TextField
               label="Senha"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(ev) => setPassword(ev.target.value)}
               required
@@ -103,16 +125,52 @@ export function RegisterPage(): ReactElement {
               helperText={
                 fieldErrors.password ?? 'Mín. 8 caracteres, maiúscula, minúscula, número e símbolo.'
               }
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                      onClick={() => setShowPassword((s) => !s)}
+                      edge="end"
+                      size="small"
+                    >
+                      {showPassword ? (
+                        <VisibilityOffIcon fontSize="small" />
+                      ) : (
+                        <VisibilityIcon fontSize="small" />
+                      )}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
             <TextField
               label="Confirmar senha"
-              type="password"
+              type={showPasswordConfirmation ? 'text' : 'password'}
               value={passwordConfirmation}
               onChange={(ev) => setPasswordConfirmation(ev.target.value)}
               required
               fullWidth
               error={Boolean(fieldErrors.password_confirmation)}
               helperText={fieldErrors.password_confirmation}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label={showPasswordConfirmation ? 'Ocultar senha' : 'Mostrar senha'}
+                      onClick={() => setShowPasswordConfirmation((s) => !s)}
+                      edge="end"
+                      size="small"
+                    >
+                      {showPasswordConfirmation ? (
+                        <VisibilityOffIcon fontSize="small" />
+                      ) : (
+                        <VisibilityIcon fontSize="small" />
+                      )}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
             <Button type="submit" variant="contained" size="large" disabled={submitting}>
               {submitting ? 'Cadastrando…' : 'Cadastrar'}
