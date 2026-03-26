@@ -12,10 +12,31 @@ const theme = createTheme({
   typography: {
     fontFamily: '"DM Sans", "Roboto", "Helvetica", "Arial", sans-serif',
   },
+  shape: {
+    borderRadius: 12,
+  },
   palette: {
     mode: 'light',
     primary: { main: '#1565c0' },
     secondary: { main: '#6a1b9a' },
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+          fontWeight: 600,
+          borderRadius: 10,
+        },
+      },
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: 14,
+        },
+      },
+    },
   },
 });
 

@@ -8,6 +8,7 @@ import {
   CardActionArea,
   CardContent,
   CardMedia,
+  Chip,
   CircularProgress,
   Dialog,
   DialogActions,
@@ -193,9 +194,25 @@ export function HomePage(): ReactElement {
 
   return (
     <Stack spacing={3}>
-      <Typography variant="h4" component="h1">
-        Produtos
-      </Typography>
+      <Box
+        sx={{
+          p: { xs: 2, md: 3 },
+          borderRadius: 3,
+          color: 'white',
+          background: 'linear-gradient(135deg, #1565c0 0%, #6a1b9a 100%)',
+          boxShadow: '0 10px 30px rgba(21, 101, 192, 0.25)',
+        }}
+      >
+        <Typography variant="overline" sx={{ opacity: 0.85 }}>
+          Coleção da semana
+        </Typography>
+        <Typography variant="h4" component="h1" fontWeight={700}>
+          Encontre o produto ideal
+        </Typography>
+        <Typography variant="body1" sx={{ opacity: 0.92, maxWidth: 700 }}>
+          Busque por nome, filtre por categoria e confira os detalhes antes de comprar.
+        </Typography>
+      </Box>
 
       {error && <Alert severity="error">{error}</Alert>}
 
@@ -377,7 +394,18 @@ export function HomePage(): ReactElement {
             }}
           >
             {products.map((p) => (
-              <Card key={p.id} variant="outlined">
+              <Card
+                key={p.id}
+                variant="outlined"
+                sx={{
+                  borderRadius: 3,
+                  transition: 'transform .2s ease, box-shadow .2s ease',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: 4,
+                  },
+                }}
+              >
                 <CardActionArea component={RouterLink} to={`/products/${p.id}`}>
                   <CardMedia
                     component="img"
@@ -399,9 +427,12 @@ export function HomePage(): ReactElement {
                     <Typography variant="subtitle1" fontWeight={700}>
                       {formatBrl(p.price)}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {p.category?.name}
-                    </Typography>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 0.5 }}>
+                      <Typography variant="caption" color="text.secondary">
+                        {p.category?.name}
+                      </Typography>
+                      <Chip size="small" color="primary" variant="outlined" label="Ver detalhe" />
+                    </Stack>
                   </CardContent>
                 </CardActionArea>
               </Card>
