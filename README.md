@@ -151,3 +151,11 @@ Marque ao validar antes de enviar o teste.
 ## Licença
 
 MIT (ajuste conforme o repositório final).
+
+<img width="1886" height="818" alt="image" src="https://github.com/user-attachments/assets/1ce08e50-5f16-4b85-9f16-50a6f336655d" />
+<img width="1882" height="609" alt="image" src="https://github.com/user-attachments/assets/29675fff-68dd-4998-a9b4-c80a446fb63a" />
+<img width="1914" height="621" alt="image" src="https://github.com/user-attachments/assets/2eca6f6c-cb50-4c6d-9b1b-f2388e989c8c" />
+<img width="1900" height="775" alt="image" src="https://github.com/user-attachments/assets/74d6c879-09f8-4c94-a5b6-880b92138d44" />
+
+
+
