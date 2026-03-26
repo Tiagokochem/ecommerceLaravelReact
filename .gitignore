@@ -1,0 +1,31 @@
+# Segredos e ambiente local (nunca commitar)
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+
+# Dependências e build
+node_modules/
+dist/
+build/
+*.log
+logs/
+
+# AIOX / agentes / IDE local (não versionar)
+.aiox-core/
+.aiox/
+.claude/
+.codex/
+.cursor/
+.gemini/
+.antigravity/
+.github/
+
+# Sistema e IDE genéricos
+.DS_Store
+Thumbs.db
+.idea/
+*.swp
+
+stories/
