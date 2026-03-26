@@ -19,9 +19,27 @@ export function RegisterPage(): ReactElement {
     e.preventDefault();
     setError(null);
     setFieldErrors({});
+
+    const localErrors: Record<string, string> = {};
+    if (!name.trim()) localErrors.name = 'Informe seu nome.';
+    if (!email.trim()) localErrors.email = 'Informe seu e-mail.';
+    if (password.length < 8) localErrors.password = 'Use ao menos 8 caracteres.';
+    if (password !== passwordConfirmation) {
+      localErrors.password_confirmation = 'As senhas não conferem.';
+    }
+    if (Object.keys(localErrors).length > 0) {
+      setFieldErrors(localErrors);
+      return;
+    }
+
     setSubmitting(true);
     try {
-      await register({ name, email, password, password_confirmation: passwordConfirmation });
+      await register({
+        name: name.trim(),
+        email: email.trim(),
+        password,
+        password_confirmation: passwordConfirmation,
+      });
       navigate('/');
     } catch (err: unknown) {
       if (axios.isAxiosError(err) && err.response?.status === 422 && err.response.data?.errors) {
@@ -93,6 +111,8 @@ export function RegisterPage(): ReactElement {
               onChange={(ev) => setPasswordConfirmation(ev.target.value)}
               required
               fullWidth
+              error={Boolean(fieldErrors.password_confirmation)}
+              helperText={fieldErrors.password_confirmation}
             />
             <Button type="submit" variant="contained" size="large" disabled={submitting}>
               {submitting ? 'Cadastrando…' : 'Cadastrar'}

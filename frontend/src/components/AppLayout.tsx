@@ -3,6 +3,7 @@ import {
   AppBar,
   Box,
   Button,
+  Chip,
   Container,
   Drawer,
   IconButton,
@@ -28,24 +29,22 @@ export function AppLayout({ children }: { children: ReactNode }): ReactElement {
 
   const nav = (
     <>
-      <Button color="inherit" component={RouterLink} to="/">
-        Catálogo
+      <Button color="inherit" variant="outlined" component={RouterLink} to="/" sx={{ borderColor: 'rgba(255,255,255,0.4)' }}>
+        Produtos
       </Button>
       {user ? (
         <>
-          <Typography variant="body2" sx={{ alignSelf: 'center', opacity: 0.9, mr: 1 }}>
-            {user.name}
-          </Typography>
-          <Button color="inherit" onClick={handleLogout} disabled={loading}>
+          <Chip label={user.name} size="small" sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white' }} />
+          <Button color="inherit" variant="contained" onClick={handleLogout} disabled={loading}>
             Sair
           </Button>
         </>
       ) : (
         <>
-          <Button color="inherit" component={RouterLink} to="/login">
+          <Button color="inherit" variant="outlined" component={RouterLink} to="/login" sx={{ borderColor: 'rgba(255,255,255,0.4)' }}>
             Entrar
           </Button>
-          <Button color="inherit" component={RouterLink} to="/register">
+          <Button color="inherit" variant="contained" component={RouterLink} to="/register">
             Cadastro
           </Button>
         </>
