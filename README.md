@@ -1,6 +1,6 @@
 # Catálogo E-commerce — Laravel + React + MySQL (Docker)
 
-Teste técnico: API REST em **Laravel** (Service & Repository, API Resources, **Laravel Sanctum**), frontend **React (Vite)**, banco **MySQL**, tudo orquestrado com **Docker Compose**.
+Teste técnico: API REST em **Laravel** (Service & Repository, API Resources, **Laravel Sanctum**), frontend **React (Vite)** com **MUI**, banco **MySQL**, orquestrado com **Docker Compose**.
 
 ## Pré-requisitos
 
@@ -16,7 +16,7 @@ Teste técnico: API REST em **Laravel** (Service & Repository, API Resources, **
 | `docker-compose.yml` | MySQL, PHP-FPM, Nginx, frontend |
 | `docker/nginx/` | Virtual host Nginx → `public/` do Laravel |
 | `.env` (raiz) | Variáveis do **Docker Compose** (portas, DB do MySQL, `VITE_API_URL`) |
-| `backend/.env` | **Laravel** (APP_KEY, DB_*, Sanctum, etc.) |
+| `backend/.env` | **Laravel** (`APP_KEY`, `DB_*`, Sanctum, etc.) |
 
 ### Dois arquivos `.env`
 
@@ -26,7 +26,7 @@ Teste técnico: API REST em **Laravel** (Service & Repository, API Resources, **
    cp .env.example .env
    ```
 
-   Contém apenas `DB_*`, `APP_PORT`, `FRONTEND_PORT` e `VITE_API_URL` para o Docker Compose.
+   Contém `DB_*`, `APP_PORT`, `FRONTEND_PORT` e `VITE_API_URL` para o Docker Compose.
 
 2. **Backend Laravel** — na primeira vez (ou após clonar sem `backend/.env`):
 
@@ -34,7 +34,13 @@ Teste técnico: API REST em **Laravel** (Service & Repository, API Resources, **
    cp backend/.env.example backend/.env
    ```
 
-   Dentro do container o MySQL é alcançado em `DB_HOST=mysql` e `DB_PORT=3306`. Para rodar `php artisan` **no host** (sem Docker), use `DB_HOST=127.0.0.1` e `DB_PORT=3307` (porta publicada do MySQL).
+   Dentro do container o MySQL é alcançado com `DB_HOST=mysql` e `DB_PORT=3306`. Para rodar `php artisan` **no host** (sem Docker), use `DB_HOST=127.0.0.1` e `DB_PORT=3307` (porta publicada do MySQL no host).
+
+   Se o Laravel reclamar de `APP_KEY` ausente:
+
+   ```bash
+   docker compose exec backend php artisan key:generate
+   ```
 
 ## Subir o ambiente (Docker)
 
@@ -74,16 +80,79 @@ docker compose exec backend php artisan migrate:fresh --seed --force
 | Frontend (Vite) | http://localhost:5174 |
 | MySQL | `localhost:3307` → container `3306` |
 
-Valores alteráveis em `.env`: `APP_PORT`, `FRONTEND_PORT`, `DB_PORT`, `VITE_API_URL`.
+Valores alteráveis em `.env` na raiz: `APP_PORT`, `FRONTEND_PORT`, `DB_PORT`, `VITE_API_URL`.
 
-**Importante:** o navegador chama a API em **`VITE_API_URL`** (ex.: `http://localhost:8000`). Mantenha igual à URL onde o Nginx do Laravel responde no seu host.
+**Importante:** o navegador chama a API em **`VITE_API_URL`** (ex.: `http://localhost:8000`). Depois de mudar a porta da API, atualize `VITE_API_URL` e reinicie o serviço `frontend` (`docker compose up -d frontend` ou `docker compose restart frontend`).
+
+## Como usar a aplicação
+
+1. Abra o **frontend**: http://localhost:5174 (ou a porta definida em `FRONTEND_PORT`).
+2. **Catálogo:** na página inicial (`/`) você vê produtos com imagem, nome, descrição e preço; há **paginação**, **filtro por categoria** e **busca** por texto.
+3. **Detalhe do produto:** clique em um produto ou acesse `/products/{id}`.
+4. **Cadastro e login:** `/register` e `/login`. Após login, o token fica no `localStorage` e é enviado automaticamente nas requisições protegidas (axios).
+5. **Categorias (CRUD):** após autenticar, use **Categorias** no menu (`/categories`) para criar, editar e excluir categorias.
+6. **Produtos (criar/editar/excluir):** na home, as ações de escrita exigem usuário logado (API protegida com Sanctum).
+
+### API REST (referência rápida)
+
+Base: `http://localhost:8000/api` (ajuste o host/porta conforme seu `.env`).
+
+| Método | Rota | Autenticação |
+|--------|------|----------------|
+| GET | `/products` | Não (query: `category`, `search`, paginação) |
+| GET | `/products/{id}` | Não |
+| GET | `/categories` | Não |
+| POST | `/register`, `/login` | Não (throttle aplicado) |
+| POST/PUT/PATCH/DELETE | `/products`, `/products/{id}` | Sim — `Authorization: Bearer {token}` |
+| POST/PUT/PATCH/DELETE | `/categories`, `/categories/{id}` | Sim — `Authorization: Bearer {token}` |
+| POST | `/logout` | Sim |
+
+Exemplo com token:
+
+```bash
+curl -s -H "Authorization: Bearer SEU_TOKEN" \
+  -H "Accept: application/json" \
+  http://localhost:8000/api/products
+```
+
+## Comandos úteis (Docker)
+
+```bash
+# Ver logs
+docker compose logs -f
+
+# Parar tudo
+docker compose down
+
+# Parar e remover volumes do MySQL (apaga dados locais)
+docker compose down -v
+
+# Artisan / Composer dentro do backend
+docker compose exec backend php artisan ...
+docker compose exec backend composer ...
+
+# Frontend: dependências já vêm do build; em desenvolvimento o volume monta o código
+docker compose restart frontend nginx backend
+```
 
 ### Node na raiz (opcional)
 
-Serviço com profile `tools` para rodar comandos Node na raiz do repositório (ex.: `npm install` de ferramentas):
+Serviço com profile `tools` para rodar comandos Node na raiz do repositório:
 
 ```bash
 docker compose --profile tools run --rm node bash
+```
+
+### Frontend no host (sem rebuild do container)
+
+Com MySQL/API já no ar:
+
+```bash
+cd frontend
+cp .env.example .env.local
+# Ajuste VITE_API_URL para a URL da API no seu navegador
+npm ci
+npm run dev -- --host
 ```
 
 ## Testes automatizados (backend)
@@ -95,67 +164,23 @@ docker compose exec backend php artisan test
 ## Arquitetura (resumo)
 
 - **API:** rotas em `backend/routes/api.php`.
-- **Padrões:** **Repository** (acesso a dados) + **Service** (regras/orquestração); controllers finos.
+- **Padrões:** **Repository** (dados) + **Service** (regras); controllers enxutos.
 - **Respostas:** **API Resources** (`JsonResource`) com envelope `data`; listagens paginadas com `links` e `meta`.
-- **Autenticação:** **Laravel Sanctum** — token pessoal (`Authorization: Bearer …`); não é JWT, mas atende ao requisito de token da API.
+- **Autenticação:** **Laravel Sanctum** — token pessoal (`Authorization: Bearer …`).
 - **Frontend:** axios com interceptor; token em `localStorage`.
 
-## Publicar no GitHub / GitLab / Bitbucket
+## Segurança e versionamento
 
-1. Crie um repositório **vazio** (sem README) no provedor.
-2. Na máquina local:
-
-   ```bash
-   git init
-   git branch -M main
-   git remote add origin https://github.com/SEU_USUARIO/SEU_REPO.git
-   git add .
-   git commit -m "Adiciona catálogo e-commerce com Docker"
-   git push -u origin main
-   ```
-
-3. **Nunca** faça commit de `.env` com segredos reais — o `.gitignore` já ignora `.env`. Revise antes do push.
-
-## Checklist de entrega (QA — edital)
-
-Marque ao validar antes de enviar o teste.
-
-### Docker
-
-- [x] `docker compose up -d` sobe **mysql**, **backend**, **nginx**, **frontend** sem erro.
-- [x] Migrações e seed executam conforme seção acima.
-
-### Backend (API)
-
-- [x] `GET /api/products` — listagem paginada.
-- [x] `GET /api/products/{id}` — detalhe; 404 se inválido.
-- [x] `GET /api/products?category={id}` — filtro por categoria.
-- [x] `GET /api/products?search={query}` — busca em nome/descrição.
-- [x] `GET /api/categories` — lista categorias.
-- [x] `POST /api/register` e `POST /api/login` — retorno com token utilizável.
-- [x] `POST/PUT/PATCH/DELETE` em produtos e categorias — **apenas com** `Authorization: Bearer` (Sanctum).
-
-### Frontend
-
-- [x] Listagem com imagem, nome, descrição, preço; paginação; filtro de categoria; busca.
-- [x] Página de detalhe do produto.
-- [x] Cadastro e login; token persistido e enviado nas requisições protegidas.
-
-### Qualidade
-
-- [x] Código organizado (Service/Repository, Resources).
-- [x] README permite reproduzir o projeto só com este arquivo.
-
----
+- Não faça commit de `.env` com segredos reais — o `.gitignore` já ignora `.env`; revise antes de push.
+- Mantenha `backend/.env.example` e `.env.example` na raiz atualizados quando adicionar variáveis novas.
 
 ## Licença
 
-MIT (ajuste conforme o repositório final).
+MIT (ajuste conforme o repositório).
 
-<img width="1886" height="818" alt="image" src="https://github.com/user-attachments/assets/1ce08e50-5f16-4b85-9f16-50a6f336655d" />
-<img width="1882" height="609" alt="image" src="https://github.com/user-attachments/assets/29675fff-68dd-4998-a9b4-c80a446fb63a" />
-<img width="1914" height="621" alt="image" src="https://github.com/user-attachments/assets/2eca6f6c-cb50-4c6d-9b1b-f2388e989c8c" />
-<img width="1900" height="775" alt="image" src="https://github.com/user-attachments/assets/74d6c879-09f8-4c94-a5b6-880b92138d44" />
+## Telas
 
-
-
+<img width="1886" height="818" alt="Catálogo — listagem de produtos" src="https://github.com/user-attachments/assets/1ce08e50-5f16-4b85-9f16-50a6f336655d" />
+<img width="1882" height="609" alt="Interface do projeto" src="https://github.com/user-attachments/assets/74dd6fff-68dd-4998-a9b4-c80a446fb63a" />
+<img width="1914" height="621" alt="Interface do projeto" src="https://github.com/user-attachments/assets/2eca6f6c-cb50-4c6d-9b1b-f2388e989c8c" />
+<img width="1900" height="775" alt="Interface do projeto" src="https://github.com/user-attachments/assets/74d6c879-09f8-4c94-a5b6-880b92138d44" />
